@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">SHELL SHOCK</string>
+    <string name="app">SHELL SHOCK</string>
+    <string name="account">Cuenta</string>
+    <string name="password">Contraseña</string>
+    <string name="name">Nombre del cliente</string>
+    <string name="address">Dirección de entrega</string>
+    <string name="phone">Número de telefono</string>
+    <string name="product">Prodcutos disponibles</string>
+    <string name="price">Precio del producto</string>
+    <string name="local">Nacional</string>
+    <string name="strange">Internacional</string>
+</resources>
