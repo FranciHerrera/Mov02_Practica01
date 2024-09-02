@@ -5,13 +5,21 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.google.firebase.messaging.FirebaseMessaging
+import android.Manifest
+
 
 class IngresoActivity : AppCompatActivity() {
 
@@ -31,6 +39,17 @@ class IngresoActivity : AppCompatActivity() {
         Cuenta("Lalo","abc"),
         Cuenta("Alex","1234")
     )
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permiso concedido
+            Toast.makeText(this, "Permiso de notificaciones concedido", Toast.LENGTH_SHORT).show()
+        } else {
+            // Permiso denegado
+            Toast.makeText(this, "Permiso de notificaciones denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +111,37 @@ class IngresoActivity : AppCompatActivity() {
         with(NotificationManagerCompat.from(this)){
             notify(notificationId,builder.build())
         }
-    }
+        // Solicitar permiso de notificaciones en tiempo de ejecución
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permiso ya concedido
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // Mostrar una explicación al usuario
+                    Toast.makeText(this, "Se necesita permiso para mostrar notificaciones", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // Solicitar el permiso
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
 
+        // Obtener el token del dispositivo
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Obtener el token
+            val token = task.result
+            Log.d("FCM", "Token: $token")
+            // Aquí puedes enviar el token a tu servidor si es necesario
+        }
+    }
 }
